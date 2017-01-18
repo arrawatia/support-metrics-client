@@ -124,6 +124,7 @@ public class SupportConfigTest {
     assertThat(SupportConfig.getEndpointHTTPEnabled(props)).isEqualTo(true);
     assertThat(SupportConfig.getEndpointHTTPSEnabled(props)).isEqualTo(true);
     assertThat(SupportConfig.isProactiveSupportEnabled(props)).isTrue();
+    assertThat(SupportConfig.getProxy(props).equals(""));
   }
 
 
@@ -175,35 +176,6 @@ public class SupportConfigTest {
     assertThat(SupportConfig.getEndpointHTTPS(props)).isEqualTo("https://support-metrics.confluent.io/anon");
   }
 
-
-  @Test
-  public void testMergeAndValidatePropsCustomerEndpointMismatch() {
-    // Given
-    Properties overrideProps = new Properties();
-    overrideProps.setProperty(SupportConfig.CONFLUENT_SUPPORT_CUSTOMER_ID_CONFIG, "C1");
-
-    // When
-    Properties props = SupportConfig.mergeAndValidateWithDefaultProperties(overrideProps);
-
-    // Then
-    assertThat(SupportConfig.getEndpointHTTP(props)).isEqualTo("http://support-metrics.confluent.io/submit");
-    assertThat(SupportConfig.getEndpointHTTPS(props)).isEqualTo("https://support-metrics.confluent.io/submit");
-  }
-
-  @Test
-  public void testMergeAndValidatePropsConfluentTestEndpointMismatch() {
-    // Given
-    Properties overrideProps = new Properties();
-    overrideProps.setProperty(SupportConfig.CONFLUENT_SUPPORT_CUSTOMER_ID_CONFIG, "C0");
-
-    // When
-    Properties props = SupportConfig.mergeAndValidateWithDefaultProperties(overrideProps);
-
-    // Then
-    assertThat(SupportConfig.getEndpointHTTP(props)).isEqualTo("http://support-metrics.confluent.io/test");
-    assertThat(SupportConfig.getEndpointHTTPS(props)).isEqualTo("https://support-metrics.confluent.io/test");
-  }
-
   @Test
   public void testMergeAndValidatePropsDisableEndpoints() {
     // Given
@@ -235,7 +207,7 @@ public class SupportConfigTest {
   }
 
   @Test
-  public void testOverrideTopc() {
+  public void testOverrideTopic() {
     // Given
     Properties overrideProps = new Properties();
     overrideProps.setProperty(SupportConfig.CONFLUENT_SUPPORT_METRICS_TOPIC_CONFIG, "__another_example_topic");

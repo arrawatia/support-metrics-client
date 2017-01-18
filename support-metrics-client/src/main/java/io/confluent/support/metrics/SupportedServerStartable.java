@@ -13,20 +13,20 @@
  */
 package io.confluent.support.metrics;
 
-import kafka.metrics.KafkaMetricsReporter;
+import org.apache.kafka.common.utils.Time;
 import org.apache.kafka.common.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.Properties;
 
+import kafka.metrics.KafkaMetricsReporter;
 import kafka.metrics.KafkaMetricsReporter$;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServer;
-import kafka.utils.SystemTime$;
 import kafka.utils.VerifiableProperties;
 import scala.Option;
+import scala.collection.Seq;
 
 /**
  * Starts a Kafka broker plus an associated "support metrics" collection thread for this broker.
@@ -45,11 +45,10 @@ public class SupportedServerStartable {
   private Thread metricsThread = null;
 
   public SupportedServerStartable(Properties brokerConfiguration) {
-    KafkaMetricsReporter$.MODULE$.startReporters(new VerifiableProperties(brokerConfiguration));
+    Seq<KafkaMetricsReporter> reporters = KafkaMetricsReporter$.MODULE$.startReporters(new VerifiableProperties(brokerConfiguration));
     KafkaConfig serverConfig = KafkaConfig.fromProps(brokerConfiguration);
     Option<String> noThreadNamePrefix = Option.empty();
-    server = new KafkaServer(serverConfig, SystemTime$.MODULE$, noThreadNamePrefix,
-            scala.collection.JavaConversions.asScalaBuffer(Collections.<KafkaMetricsReporter>emptyList()));
+    server = new KafkaServer(serverConfig, Time.SYSTEM, noThreadNamePrefix, reporters);
 
     if (SupportConfig.isProactiveSupportEnabled(brokerConfiguration)) {
       try {
